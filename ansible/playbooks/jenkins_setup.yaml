@@ -1,0 +1,7 @@
+---
+- name: Install Jenkins on CICD server
+  hosts: cicd
+  become: yes
+  roles:
+    - jenkins
+

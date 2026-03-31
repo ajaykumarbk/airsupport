@@ -1,0 +1,17 @@
+all:
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  children:
+    webservers:
+      hosts:
+        oracle-web:
+          ansible_host: 140.245.225.43
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: /home/ubuntu/oci-keys/ocisshkeys.pem 
+    cicd:
+      hosts:
+        oracle-cicd:
+          ansible_host:  150.230.140.223
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: /home/ubuntu/oci-keys/ocisshkeys.pem
+
