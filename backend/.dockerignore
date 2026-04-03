@@ -11,7 +11,5 @@ README.md
 .DS_Store
 dist
 coverage
-.eslintignore
-.prettierignore
 yarn.lock
 .yarn

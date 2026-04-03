@@ -11,12 +11,6 @@ README.md
 .DS_Store
 dist
 coverage
-.eslintignore
-.prettierignore
 yarn.lock
 .yarn
 .husky
-.commitlintrc
-vitest.config.js
-cypress
-e2e
