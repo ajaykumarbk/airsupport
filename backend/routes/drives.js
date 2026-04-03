@@ -1,39 +1,74 @@
+/**
+ * Shared Drive Lookup Routes
+ * Provides endpoints for retrieving Google Drive and permissions information
+ */
+
 const express = require('express');
+const { google } = require('googleapis');
+const { getAuthClient } = require('../googleClient');
+
 const router = express.Router();
-const {google} = require('googleapis');
-const {getAuthClient} = require('../googleClient');
 
+// API Scopes
+const DRIVE_SCOPES = [
+  'https://www.googleapis.com/auth/drive.readonly',
+];
 
-// GET /api/drive/:driveId
+/**
+ * GET /api/drive/:driveId
+ * Retrieve shared drive metadata and permissions
+ * @param {string} driveId - Google Drive ID
+ * @returns {object} Drive metadata and list of members/permissions
+ */
 router.get('/:driveId', async (req, res) => {
-const driveId = req.params.driveId;
-try {
-const auth = getAuthClient(['https://www.googleapis.com/auth/drive.readonly']);
-await auth.authorize();
-const drive = google.drive({version: 'v3', auth});
+  const { driveId } = req.params;
 
+  if (!driveId || driveId.trim().length === 0) {
+    return res.status(400).json({ error: 'Drive ID parameter is required' });
+  }
 
-// Get drive metadata
-const metadata = await drive.drives.get({driveId, fields: 'id,name'});
+  try {
+    // Authenticate with Google APIs
+    const auth = getAuthClient(DRIVE_SCOPES);
+    await auth.authorize();
 
+    // Initialize Google Drive API
+    const drive = google.drive({ version: 'v3', auth });
 
-// List permissions/members for the drive — requires drive scope
-// Drive API doesn't return "role" the same way as members in Drive, but permissions will show role and emailAddress if available
-const permsRes = await drive.permissions.list({
-fileId: driveId,
-supportsAllDrives: true,
-useDomainAdminAccess: true,
-fields: 'permissions(id,role,type,emailAddress,displayName)'
+    // Fetch drive metadata
+    const metadataRes = await drive.drives.get({
+      driveId,
+      fields: 'id,name',
+    });
+
+    const driveMetadata = metadataRes.data;
+
+    // Fetch drive permissions
+    const permissionsRes = await drive.permissions.list({
+      fileId: driveId,
+      supportsAllDrives: true,
+      useDomainAdminAccess: true,
+      fields: 'permissions(id,role,type,emailAddress,displayName)',
+    });
+
+    const permissions = permissionsRes.data.permissions || [];
+
+    return res.status(200).json({
+      success: true,
+      drive: driveMetadata,
+      members: permissions,
+    });
+  } catch (err) {
+    const status = err.status || 500;
+    const message = err.message || 'Failed to fetch drive information';
+
+    console.error(`[Drive Lookup] Error for ${driveId}:`, err);
+
+    return res.status(status).json({
+      success: false,
+      error: message,
+    });
+  }
 });
-
-
-const permissions = permsRes.data.permissions || [];
-res.json({drive: metadata.data, members: permissions});
-} catch (err) {
-console.error(err);
-res.status(500).json({error: err.message});
-}
-});
-
 
 module.exports = router;

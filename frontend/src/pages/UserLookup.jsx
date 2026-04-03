@@ -1,91 +1,148 @@
-import React, { useState } from 'react'
-import { fetchUser } from '../api'
-import ResultCard from '../components/ResultCard'
+import React, { useState } from 'react';
+import { fetchUser } from '../api';
+import ResultCard from '../components/ResultCard';
 
-export default function UserLookup() {
-  const [email, setEmail] = useState('')
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+/**
+ * User Lookup Page
+ * Global search for Google Workspace user information and group memberships
+ */
+function UserLookup() {
+  const [email, setEmail] = useState('');
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  async function onSearch(e) {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
-    setData(null)
+  const handleSearch = async (e) => {
+    e.preventDefault();
+
+    // Clear previous state
+    setError(null);
+    setData(null);
+    setIsLoading(true);
+
     try {
-      const res = await fetchUser(email)
-      setData(res)
+      const result = await fetchUser(email);
+      setData(result);
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'An error occurred while searching. Please try again.');
+      console.error('Search error:', err);
     } finally {
-      setLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  const renderUserInfo = () => {
+    if (!data || !data.user) return null;
+
+    const { user, aliases = [], groups = [] } = data;
+
+    return (
+      <>
+        <ResultCard title={`User — ${user.primaryEmail}`}>
+          <dl>
+            <dt>Full Name</dt>
+            <dd>{user.name?.fullName || '—'}</dd>
+
+            <dt>Given Name</dt>
+            <dd>{user.name?.givenName || '—'}</dd>
+
+            <dt>Family Name</dt>
+            <dd>{user.name?.familyName || '—'}</dd>
+
+            <dt>Primary Email</dt>
+            <dd>{user.primaryEmail}</dd>
+
+            <dt>Suspended</dt>
+            <dd>{user.suspended ? 'Yes' : 'No'}</dd>
+
+            <dt>Admin</dt>
+            <dd>{user.isAdmin ? 'Yes' : 'No'}</dd>
+
+            <dt>Aliases</dt>
+            <dd>{aliases.length > 0 ? aliases.map((a) => a.alias).join(', ') : '—'}</dd>
+
+            <dt>Organization Unit Path</dt>
+            <dd>{user.orgUnitPath || '—'}</dd>
+
+            <dt>Last Login</dt>
+            <dd>{user.lastLoginTime || '—'}</dd>
+          </dl>
+        </ResultCard>
+
+        {/* Groups Section */}
+        {groups && groups.length > 0 && (
+          <ResultCard title={`Group Memberships (${groups.length})`}>
+            <div style={{ marginTop: '12px' }}>
+              {groups.map((group) => (
+                <div key={group.id} style={{
+                  padding: '12px',
+                  marginBottom: '8px',
+                  background: '#f8f9fa',
+                  borderRadius: '6px',
+                  borderLeft: '3px solid #1a73e8'
+                }}>
+                  <strong style={{ color: '#202124' }}>{group.name}</strong>
+                  <div style={{ fontSize: '13px', color: '#5f6368', marginTop: '4px' }}>
+                    {group.email}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ResultCard>
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="page-content">
+      {/* Search Form */}
       <div className="search-section">
-        <form onSubmit={onSearch} className="search-form-top">
-          <label>Enter User Email</label>
+        <form onSubmit={handleSearch} className="search-form-top">
+          <label htmlFor="email-input">Search User</label>
           <div className="row">
             <input
+              id="email-input"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="user@domain.com"
+              disabled={isLoading}
             />
-            <button disabled={!email || loading}>
-              {loading ? '🔍 Searching...' : '🔍 Search'}
+            <button type="submit" disabled={!email || isLoading} aria-busy={isLoading}>
+              {isLoading ? '🔍 Searching...' : '🔍 Search'}
             </button>
           </div>
         </form>
       </div>
 
-      {!data && !error && !loading && (
+      {/* Error State */}
+      {error && (
+        <div className="error" role="alert">
+          {error}
+        </div>
+      )}
+
+      {/* Welcome State */}
+      {!data && !error && !isLoading && (
         <div className="welcome-center">
           <div className="welcome-card">
-            <h1 className="welcome-title">✨ Welcome to User Lookup</h1>
-            <p className="welcome-subtitle">Search and manage your Google Workspace resources effortlessly</p>
-            <div className="features-grid">
-              <div className="feature-item">
-                <span className="feature-icon">🔐</span>
-                <h3>Secure Access</h3>
-                <p>Enterprise-grade security</p>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">⚡</span>
-                <h3>Fast Search</h3>
-                <p>Lightning-fast results</p>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">📊</span>
-                <h3>Detailed Reports</h3>
-                <p>Comprehensive insights</p>
-              </div>
-            </div>
+            <h1 className="welcome-title">Global User Search</h1>
+            <p className="welcome-subtitle">
+              Enter a user email to view their details and group memberships
+            </p>
           </div>
         </div>
       )}
 
-      {error && <div className="error">{error}</div>}
-
+      {/* Results State */}
       {data && (
         <div className="results-section">
-          <ResultCard title={`User — ${data.user.primaryEmail}`}>
-            <dl>
-              <dt>Full name</dt><dd>{data.user.name?.fullName}</dd>
-              <dt>Given name</dt><dd>{data.user.name?.givenName}</dd>
-              <dt>Family name</dt><dd>{data.user.name?.familyName}</dd>
-              <dt>Primary email</dt><dd>{data.user.primaryEmail}</dd>
-              <dt>Suspended</dt><dd>{data.user.suspended ? 'Yes' : 'No'}</dd>
-              <dt>Admin</dt><dd>{data.user.isAdmin ? 'Yes' : 'No'}</dd>
-              <dt>Aliases</dt><dd>{(data.aliases || []).map(a => a.alias).join(', ') || '—'}</dd>
-              <dt>Org Unit Path</dt><dd>{data.user.orgUnitPath}</dd>
-              <dt>Last login</dt><dd>{data.user.lastLoginTime || '—'}</dd>
-            </dl>
-          </ResultCard>
+          {renderUserInfo()}
         </div>
       )}
     </div>
-  )
+  );
 }
+
+export default UserLookup;

@@ -1,62 +1,92 @@
-import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-export default function NavBar(){
-  const loc = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
-  
+/**
+ * Navigation Bar Component
+ * Sidebar navigation with collapsible state and user info
+ */
+function NavBar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const navigationItems = [
+    { path: '/', icon: '👤', label: 'User Search' },
+    { path: '/group', icon: '👥', label: 'Group Search' },
+    { path: '/drive', icon: '📁', label: 'Drive Search' },
+  ];
+
   return (
     <>
-      <button 
-        className="sidebar-toggle" 
-        onClick={() => setCollapsed(!collapsed)}
+      <button
+        className="sidebar-toggle"
+        onClick={toggleSidebar}
         aria-label="Toggle Sidebar"
       >
-        {collapsed ? '☰' : '✕'}
+        {isCollapsed ? '☰' : '✕'}
       </button>
-      
-      <nav className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+
+      <nav className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+        {/* Logo/Header */}
         <div className="sidebar-header">
           <div className="logo-section">
-            <h1 className="logo">🚀 GW Support</h1>
-            {!collapsed && <p className="tagline">Google Workspace Assistant</p>}
+            <h1 className="logo">GW Support</h1>
+            {!isCollapsed && (
+              <p className="tagline">Secure Access</p>
+            )}
           </div>
         </div>
 
+        {/* Navigation Links */}
         <div className="sidebar-links">
-          <Link className={loc.pathname === '/' ? 'active' : ''} to="/">
-            <span className="link-icon">👤</span>
-            {!collapsed && <span className="link-text">User Lookup</span>}
-          </Link>
-          <Link className={loc.pathname === '/drive' ? 'active' : ''} to="/drive">
-            <span className="link-icon">📁</span>
-            {!collapsed && <span className="link-text">Shared Drive</span>}
-          </Link>
-          <Link className={loc.pathname === '/group' ? 'active' : ''} to="/group">
-            <span className="link-icon">👥</span>
-            {!collapsed && <span className="link-text">Group Lookup</span>}
-          </Link>
+          {navigationItems.map((item) => (
+            <Link
+              key={item.path}
+              className={location.pathname === item.path ? 'active' : ''}
+              to={item.path}
+            >
+              <span className="link-icon">{item.icon}</span>
+              {!isCollapsed && (
+                <span className="link-text">{item.label}</span>
+              )}
+            </Link>
+          ))}
         </div>
 
-        {!collapsed && (
+        {/* User Info and Logout */}
+        {user && (
           <div className="sidebar-footer">
-            <div className="sidebar-info">
-              <div className="info-item">
-                <span>🔐</span>
-                <span>Secure Access</span>
+            {!isCollapsed && (
+              <div className="user-info">
+                <p className="user-email">{user.email}</p>
+                {user.firstName && (
+                  <p className="user-name">{user.firstName} {user.lastName || ''}</p>
+                )}
               </div>
-              <div className="info-item">
-                <span>⚡</span>
-                <span>Fast Search</span>
-              </div>
-              <div className="info-item">
-                <span>📊</span>
-                <span>Detailed Reports</span>
-              </div>
-            </div>
+            )}
+            <button 
+              className="logout-btn"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              {isCollapsed ? '🔒' : 'Logout'}
+            </button>
           </div>
         )}
       </nav>
     </>
-  )
+  );
 }
+
+export default NavBar;

@@ -1,6 +1,17 @@
-import React from 'react'
+import React from 'react';
 
-export default function ResultCard({ title, children }) {
+/**
+ * Result Card Component
+ * Generic reusable card for displaying search results
+ * @param {string} title - Card title
+ * @param {React.ReactNode} children - Card content
+ */
+function ResultCard({ title, children }) {
+  /**
+   * Get icon based on card title
+   * @param {string} title - Card title
+   * @returns {string} Emoji icon
+   */
   const getIcon = (title) => {
     if (title?.toLowerCase().includes('user')) return '👤';
     if (title?.toLowerCase().includes('drive')) return '📁';
@@ -10,11 +21,24 @@ export default function ResultCard({ title, children }) {
     return '📊';
   };
 
+  /**
+   * Get description based on card title
+   * @param {string} title - Card title
+   * @returns {string} Description text
+   */
   const getDescription = (title) => {
-    if (title?.toLowerCase().includes('user')) return 'User account information and details';
-    if (title?.toLowerCase().includes('drive')) return 'Shared drive information and permissions';
-    if (title?.toLowerCase().includes('group')) return 'Group membership and settings';
-    if (title?.toLowerCase().includes('member')) return 'List of all members';
+    if (title?.toLowerCase().includes('user')) {
+      return 'User account information and details';
+    }
+    if (title?.toLowerCase().includes('drive')) {
+      return 'Shared drive information and permissions';
+    }
+    if (title?.toLowerCase().includes('group')) {
+      return 'Group membership and settings';
+    }
+    if (title?.toLowerCase().includes('member')) {
+      return 'List of all members';
+    }
     return 'Search results will appear here';
   };
 
@@ -36,5 +60,7 @@ export default function ResultCard({ title, children }) {
         )}
       </div>
     </div>
-  )
+  );
 }
+
+export default ResultCard;
