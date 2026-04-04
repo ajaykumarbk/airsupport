@@ -55,3 +55,8 @@ Thumbs.db
 # Testing
 # ────────────────────────────────
 coverage/
+
+
+#K8s
+
+1-secrets.yaml
