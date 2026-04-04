@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: myapp
+  namespace: production
 spec:
   replicas: 2
   selector:
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: ajaykumara/supportair_backend:latest
+        image: ajaykumara/gw-backend:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 4000
@@ -48,7 +48,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: myapp
+  namespace: production
 spec:
   type: ClusterIP
   selector:
