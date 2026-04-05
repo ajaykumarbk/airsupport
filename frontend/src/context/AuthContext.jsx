@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
   const fetchUserInfo = async (authToken) => {
     try {
       const response = await fetch(
-        `/api/auth/me`,
+        `${import.meta.env.VITE_API_BASE || 'http://localhost:4000/api'}/auth/me`,
         {
           headers: { Authorization: `Bearer ${authToken}` },
         }
@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       const response = await fetch(
-        `/api/auth/register`,
+        `${import.meta.env.VITE_API_BASE || 'http://localhost:4000/api'}/auth/register`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -83,7 +83,7 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       const response = await fetch(
-        `/api/auth/login`,
+        `${import.meta.env.VITE_API_BASE || 'http://localhost:4000/api'}/auth/login`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
