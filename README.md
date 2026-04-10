@@ -1024,3 +1024,9 @@ For issues, questions, or contributions:
 ## License
 
 MIT License - See LICENSE file for details
+
+docker build -t your-dockerhub-username/airsupport-frontend:latest ./frontend
+docker push your-dockerhub-username/airsupport-frontend:latest
+
+docker build -t your-dockerhub-username/airsupport-backend:latest ./backend
+docker push your-dockerhub-username/airsupport-backend:latest

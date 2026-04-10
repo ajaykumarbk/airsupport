@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: airsupport-ingress
+  namespace: airsupport
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # Essential for Vite/React routing and API proxying
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  tls:
+  - hosts:
+    - admin-collab-tool.datanetwork.online
+    secretName: airsupport-tls-cert
+  rules:
+  - host: admin-collab-tool.datanetwork.online
+    http:
+      paths:
+      # API Path (Must come first)
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-svc
+            port:
+              number: 4000
+      # Frontend Path
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-svc
+            port:
+              number: 80

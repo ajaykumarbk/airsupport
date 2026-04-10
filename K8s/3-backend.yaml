@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: airsupport
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: your-dockerhub-username/airsupport-backend:latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: PORT
+          value: "4000"
+        - name: DB_HOST
+          value: "140.245.237.157"
+        - name: DB_USER
+          value: "wms_app"
+        - name: DB_NAME
+          value: "supportair"
+        - name: DB_PORT
+          value: "3306"
+        envFrom:
+        - secretRef:
+            name: airsupport-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+  namespace: airsupport
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 4000
+    targetPort: 4000
